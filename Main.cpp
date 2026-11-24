@@ -124,11 +124,28 @@ int main()
 	* folder and then give a relative path from this folder to whatever resource you want to get to.
 	* Also note that this requires C++17, so go to Project Properties, C/C++, Language, and select C++17
 	*/
-	std::string parentDir = (fs::current_path().fs::path::parent_path()).string();
-	std::string modelPath = "/Resources/YoutubeOpenGL 13 - Model Loading/models/bunny/scene.gltf";
-	
+	fs::path relativeModelPath = fs::path("Resources") / "YoutubeOpenGL 13 - Model Loading" / "models" / "bunny" / "scene.gltf";
+	fs::path modelPath;
+	fs::path searchDir = fs::current_path();
+	for (int i = 0; i < 3 && modelPath.empty(); ++i)
+	{
+		fs::path directPath = searchDir / relativeModelPath;
+		fs::path tutorialPath = searchDir / "opengl-tutorials-main" / "opengl-tutorials-main" / relativeModelPath;
+		if (fs::exists(directPath))
+			modelPath = directPath;
+		else if (fs::exists(tutorialPath))
+			modelPath = tutorialPath;
+		else
+			searchDir = searchDir.parent_path();
+	}
+	if (!fs::exists(modelPath))
+	{
+		std::cerr << "No se encontró el modelo: " << modelPath << std::endl;
+		return -1;
+	}
+
 	// Load in a model
-	Model model((parentDir + modelPath).c_str());
+	Model model(modelPath.string().c_str());
 
 	// Original code from the tutorial
 	// Model model("models/bunny/scene.gltf");

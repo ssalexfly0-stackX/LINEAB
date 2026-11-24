@@ -1,4 +1,5 @@
 #include"Model.h"
+#include<filesystem>
 
 Model::Model(const char* file)
 {
@@ -133,9 +134,8 @@ std::vector<unsigned char> Model::getData()
 	std::string uri = JSON["buffers"][0]["uri"];
 
 	// Store raw text data into bytesText
-	std::string fileStr = std::string(file);
-	std::string fileDirectory = fileStr.substr(0, fileStr.find_last_of('/') + 1);
-	bytesText = get_file_contents((fileDirectory + uri).c_str());
+	std::filesystem::path fileDirectory = std::filesystem::path(file).parent_path();
+	bytesText = get_file_contents((fileDirectory / uri).string().c_str());
 
 	// Transform the raw text data into bytes and put them in a vector
 	std::vector<unsigned char> data(bytesText.begin(), bytesText.end());
@@ -232,8 +232,7 @@ std::vector<Texture> Model::getTextures()
 {
 	std::vector<Texture> textures;
 
-	std::string fileStr = std::string(file);
-	std::string fileDirectory = fileStr.substr(0, fileStr.find_last_of('/') + 1);
+	std::filesystem::path fileDirectory = std::filesystem::path(file).parent_path();
 
 	// Go over all images
 	for (unsigned int i = 0; i < JSON["images"].size(); i++)
@@ -259,7 +258,7 @@ std::vector<Texture> Model::getTextures()
 			// Load diffuse texture
 			if (texPath.find("baseColor") != std::string::npos)
 			{
-				Texture diffuse = Texture((fileDirectory + texPath).c_str(), "diffuse", loadedTex.size());
+				Texture diffuse = Texture((fileDirectory / texPath).string().c_str(), "diffuse", loadedTex.size());
 				textures.push_back(diffuse);
 				loadedTex.push_back(diffuse);
 				loadedTexName.push_back(texPath);
@@ -267,7 +266,7 @@ std::vector<Texture> Model::getTextures()
 			// Load specular texture
 			else if (texPath.find("metallicRoughness") != std::string::npos)
 			{
-				Texture specular = Texture((fileDirectory + texPath).c_str(), "specular", loadedTex.size());
+				Texture specular = Texture((fileDirectory / texPath).string().c_str(), "specular", loadedTex.size());
 				textures.push_back(specular);
 				loadedTex.push_back(specular);
 				loadedTexName.push_back(texPath);
